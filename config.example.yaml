@@ -1,0 +1,49 @@
+level: info
+
+redis:
+  username: ""
+  password: ""
+  addresses:
+    - "127.0.0.1:6379"
+  database: 0
+  sentinel: false
+
+mongo:
+  uri: "mongodb://127.0.0.1:27017"
+  database: "discord"
+
+discord:
+  guild_id: 111772771016515584
+  token: <bot-token>
+  admin_roles:
+    - 688158424328044587
+
+monitoring:
+  enabled: true
+  bind: :9100
+  labels:
+    - key: key
+      value: value
+
+health:
+  enabled: true
+  bind: :9101
+
+pod:
+  name: ""
+
+modules:
+  common:
+    enabled: true
+    dank_role_id: 353238417212964865
+    based_role_id: 814422920193245214
+    based_role_colors:
+      - 3066993
+  goodnight:
+    enabled: true
+  points:
+    enabled: true
+    hourly_limit: 30
+    daily_limit: 120
+    weekly_limit: 480
+    points_per_message: 10
