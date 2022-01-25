@@ -195,12 +195,13 @@ func (m *Module) onMessage(s *discordgo.Session, msg *discordgo.MessageCreate) {
 		mp[v] = true
 	}
 
+	hasRequiredRole := m.gCtx.Config().Modules.Points.RequiredRoleID == "" || mp[m.gCtx.Config().Modules.Points.RequiredRoleID]
 	for _, role := range m.gCtx.Config().Modules.Points.Roles {
-		if role.Points <= int(user.Modules.Points.Points)+10 && !mp[role.ID] {
+		if hasRequiredRole && role.Points <= int(user.Modules.Points.Points)+10 && !mp[role.ID] {
 			if err := s.GuildMemberRoleAdd(m.gCtx.Config().Discord.GuildID, msg.Author.ID, role.ID); err != nil {
 				logrus.Errorf("cannot add role (%s) to user (%s): %s", role.ID, msg.Author.ID, err.Error())
 			}
-		} else if role.Points > int(user.Modules.Points.Points)+10 && mp[role.ID] {
+		} else if !hasRequiredRole || (role.Points > int(user.Modules.Points.Points)+10 && mp[role.ID]) {
 			if err := s.GuildMemberRoleRemove(m.gCtx.Config().Discord.GuildID, msg.Author.ID, role.ID); err != nil {
 				logrus.Errorf("cannot remove role (%s) from user (%s): %s", role.ID, msg.Author.ID, err.Error())
 			}

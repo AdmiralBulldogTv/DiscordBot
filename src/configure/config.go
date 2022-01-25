@@ -125,11 +125,12 @@ type Config struct {
 
 	Modules struct {
 		Points struct {
-			Enabled          bool `mapstructure:"enabled" json:"enabled"`
-			HourlyLimit      int  `mapstructure:"hourly_limit" json:"hourly_limit"`
-			DailyLimit       int  `mapstructure:"daily_limit" json:"daily_limit"`
-			WeeklyLimit      int  `mapstructure:"weekly_limit" json:"weekly_limit"`
-			PointsPerMessage int  `mapstructure:"points_per_message" json:"points_per_message"`
+			Enabled          bool   `mapstructure:"enabled" json:"enabled"`
+			HourlyLimit      int    `mapstructure:"hourly_limit" json:"hourly_limit"`
+			DailyLimit       int    `mapstructure:"daily_limit" json:"daily_limit"`
+			WeeklyLimit      int    `mapstructure:"weekly_limit" json:"weekly_limit"`
+			PointsPerMessage int    `mapstructure:"points_per_message" json:"points_per_message"`
+			RequiredRoleID   string `mapstructure:"required_role_id" json:"required_role_id"`
 			Roles            []struct {
 				ID     string `mapstructure:"id" json:"id"`
 				Points int    `mapstructure:"points" json:"points"`
