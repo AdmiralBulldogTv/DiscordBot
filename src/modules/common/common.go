@@ -127,7 +127,7 @@ func (m *Module) DankCmd() command.Cmd {
 				color |= rand.Intn(255) << (i * 8)
 			}
 
-			_, err = s.GuildRoleEdit(msg.GuildID, m.gCtx.Config().Modules.Common.DankRoleID, "Dank Memers", color, false, 0, false)
+			_, err = s.GuildRoleEdit(msg.GuildID, m.gCtx.Config().Modules.Common.DankRoleID, "Dank Memers", color, false, discordgo.PermissionAddReactions, false)
 			if err != nil {
 				return err
 			}
@@ -173,11 +173,11 @@ func (m *Module) BasedCmd() command.Cmd {
 
 			color := m.gCtx.Config().Modules.Common.BasedRoleColors[rand.Intn(len(m.gCtx.Config().Modules.Common.BasedRoleColors))]
 
-			_, err = s.GuildRoleEdit(msg.GuildID, m.gCtx.Config().Modules.Common.BasedRoleID, "Based Memers", color, true, 0, false)
+			_, err = s.GuildRoleEdit(msg.GuildID, m.gCtx.Config().Modules.Common.BasedRoleID, "Based Memers", color, true, discordgo.PermissionAddReactions, false)
 			if err != nil {
 				return err
 			}
-			_, err = s.ChannelMessageSendReply(msg.ChannelID, fmt.Sprintf("Changed the color of dank memers to #%06x", color), msg.Reference())
+			_, err = s.ChannelMessageSendReply(msg.ChannelID, fmt.Sprintf("Changed the color of based memers to #%06x", color), msg.Reference())
 			return err
 		},
 	}

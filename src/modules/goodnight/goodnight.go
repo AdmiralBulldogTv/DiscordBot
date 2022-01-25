@@ -64,7 +64,7 @@ func (m *Module) onMessage(s *discordgo.Session, msg *discordgo.MessageCreate) {
 	defer cancel()
 
 	content := strings.ToLower(msg.Content)
-	if strings.HasPrefix(content, "!gn") {
+	if strings.HasPrefix(content, "!gn") || strings.HasPrefix(content, "!tuck") {
 		return
 	}
 
@@ -94,7 +94,7 @@ func (m *Module) onMessage(s *discordgo.Session, msg *discordgo.MessageCreate) {
 			st, err := s.ChannelMessage(splits[0], splits[1])
 			if err == nil {
 				at, _ := st.Timestamp.Parse()
-				content = append(content, fmt.Sprintf("%s mentioned you %s ago: [here](https://discord.com/channels/%s/%s/%s)", st.Author.Mention(), (time.Since(at)/time.Second)*time.Second, splits[2], st.ChannelID, st.ID))
+				content = append(content, fmt.Sprintf("%s mentioned you %s ago: [here](https://discord.com/channels/%s/%s/%s)", st.Author, (time.Since(at)/time.Second)*time.Second, splits[2], st.ChannelID, st.ID))
 				if len(content) == 20 {
 					break
 				}
@@ -141,7 +141,6 @@ func (m *Module) onMessage(s *discordgo.Session, msg *discordgo.MessageCreate) {
 			}
 		}
 	}
-
 }
 
 func (m *Module) GnCmd() command.Cmd {
@@ -212,9 +211,12 @@ func (m *Module) GnCmd() command.Cmd {
 					}
 				}
 
-				if _, err := s.ChannelMessageSendComplex(msg.ChannelID, data); err != nil {
+				_, err := s.ChannelMessageSendComplex(msg.ChannelID, data)
+				if err != nil {
 					logrus.Error("failed to send message: ", err)
 				}
+
+				return err
 			}
 
 			_, err = s.ChannelMessageSendReply(msg.ChannelID, fmt.Sprintf("%s has gone to sleep somebody tuck them!", username), msg.Reference())
@@ -240,6 +242,63 @@ func (m *Module) TuckCmd() command.Cmd {
 			search := strings.TrimSpace(strings.ToLower(strings.Join(path, " ")))
 			member := utils.FindMember(s, guild, msg.Message, search)
 
+			if member == nil && search == "" {
+				msg.Member.User = msg.Author
+				member = msg.Member
+			}
+
+			set, err := m.gCtx.Inst().Redis.Exists(m.gCtx, fmt.Sprintf("sleepers:%s", msg.Author.ID))
+			if err != nil {
+				return err
+			}
+
+			if set && (member == nil || member.User.ID != msg.Author.ID) {
+				pipe := m.gCtx.Inst().Redis.Pipeline(m.gCtx)
+				getCmd := pipe.Get(m.gCtx, fmt.Sprintf("sleepers:%s", msg.Author.ID))
+				sMembersCmd := pipe.SMembers(m.gCtx, fmt.Sprintf("sleepers:%s:mentions", msg.Author.ID))
+				pipe.Del(m.gCtx, fmt.Sprintf("sleepers:%s", msg.Author.ID))
+				pipe.Del(m.gCtx, fmt.Sprintf("sleepers:%s:tucked", msg.Author.ID))
+				pipe.Del(m.gCtx, fmt.Sprintf("sleepers:%s:mentions", msg.Author.ID))
+				_, _ = pipe.Exec(m.gCtx)
+
+				val, _ := getCmd.Result()
+				sleepDate, _ := time.Parse(time.RFC3339, val)
+				data := &discordgo.MessageSend{
+					Reference: msg.Reference(),
+					Content:   fmt.Sprintf("%s woke up after %s", msg.Author, (time.Since(sleepDate)/time.Second)*time.Second),
+				}
+
+				content := []string{}
+				for _, v := range sMembersCmd.Val() {
+					splits := strings.SplitN(v, " ", 3)
+					st, err := s.ChannelMessage(splits[0], splits[1])
+					if err == nil {
+						at, _ := st.Timestamp.Parse()
+						content = append(content, fmt.Sprintf("%s mentioned you %s ago: [here](https://discord.com/channels/%s/%s/%s)", st.Author.Mention(), (time.Since(at)/time.Second)*time.Second, splits[2], st.ChannelID, st.ID))
+						if len(content) == 20 {
+							break
+						}
+					}
+				}
+				if len(content) != 0 {
+					data.Embed = &discordgo.MessageEmbed{
+						Color: s.State.MessageColor(msg.Message),
+						Author: &discordgo.MessageEmbedAuthor{
+							Name:    fmt.Sprintf("People who mentioned %s", msg.Author.Username),
+							IconURL: msg.Author.AvatarURL(""),
+						},
+						Description: strings.Join(content, "\n"),
+					}
+				}
+
+				_, err := s.ChannelMessageSendComplex(msg.ChannelID, data)
+				if err != nil {
+					logrus.Error("failed to send message: ", err)
+				}
+
+				return err
+			}
+
 			if member == nil {
 				if search == "" {
 					st, err := s.ChannelMessageSendReply(msg.ChannelID, "Invalid usage: `!tuck <user ...> <message>`", msg.Reference())
@@ -258,7 +317,7 @@ func (m *Module) TuckCmd() command.Cmd {
 				return err
 			}
 
-			set, err := m.gCtx.Inst().Redis.SetNX(m.gCtx, fmt.Sprintf("sleepers:%s:tucked", member.User.ID), "", 0)
+			set, err = m.gCtx.Inst().Redis.SetNX(m.gCtx, fmt.Sprintf("sleepers:%s:tucked", member.User.ID), "", 0)
 			if err != nil {
 				return err
 			}
