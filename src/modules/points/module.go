@@ -195,7 +195,14 @@ func (m *Module) onMessage(s *discordgo.Session, msg *discordgo.MessageCreate) {
 		mp[v] = true
 	}
 
-	hasRequiredRole := m.gCtx.Config().Modules.Points.RequiredRoleID == "" || mp[m.gCtx.Config().Modules.Points.RequiredRoleID]
+	hasRequiredRole := false
+	for _, role := range m.gCtx.Config().Modules.Points.RequiredRoleIDs {
+		hasRequiredRole = mp[role]
+		if hasRequiredRole {
+			break
+		}
+	}
+
 	for _, role := range m.gCtx.Config().Modules.Points.Roles {
 		if hasRequiredRole && role.Points <= int(user.Modules.Points.Points)+10 && !mp[role.ID] {
 			if err := s.GuildMemberRoleAdd(m.gCtx.Config().Discord.GuildID, msg.Author.ID, role.ID); err != nil {
