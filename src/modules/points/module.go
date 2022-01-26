@@ -226,13 +226,9 @@ func (m *Module) PointsCmd() command.Cmd {
 			return "points"
 		},
 		MatchCmd: func(path []string) bool {
-			return len(path) != 0 && (strings.EqualFold(path[0], "points") || strings.EqualFold(path[0], "boints") || (strings.EqualFold(path[0], "bank") && strings.EqualFold(path[1], "balance")))
+			return len(path) != 0 && (strings.EqualFold(path[0], "points") || strings.EqualFold(path[0], "boints"))
 		},
 		ExecuteCmd: func(s *discordgo.Session, msg *discordgo.MessageCreate, path []string) error {
-			if path[0] == "bank" {
-				path = path[1:]
-			}
-
 			guild, err := s.State.Guild(msg.GuildID)
 			if err != nil {
 				return err
