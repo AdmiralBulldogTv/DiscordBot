@@ -426,7 +426,7 @@ func (m *Module) PingCmd() command.Cmd {
 				}
 			}
 
-			_, err = s.ChannelMessageSend(msg.ChannelID, fmt.Sprintf("<@&%s> pingged by %s", m.gCtx.Config().Modules.InHouse.InhouseRoleID, msg.Author))
+			_, err = s.ChannelMessageSend(msg.ChannelID, fmt.Sprintf("<@&%s> pinged by %s", m.gCtx.Config().Modules.InHouse.InhouseRoleID, msg.Author))
 			return err
 		},
 	}
