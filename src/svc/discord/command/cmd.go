@@ -62,14 +62,14 @@ func (c *CommandGroup) Execute(s *discordgo.Session, m *discordgo.MessageCreate,
 			if len(path) != 0 {
 				path = path[1:]
 			}
-			return cmd.Execute(s, m, path[1:])
+			return cmd.Execute(s, m, path)
 		}
 	} else if c.DefaultComnmnd != nil {
 		if c.DefaultComnmnd.Match(path) {
 			if len(path) != 0 {
 				path = path[1:]
 			}
-			return cmd.Execute(s, m, path[1:])
+			return cmd.Execute(s, m, path)
 		}
 	}
 
