@@ -219,7 +219,7 @@ func (m *Module) GoldCmd() command.Cmd {
 				return err
 			}
 
-			if err := s.GuildMemberRoleAdd(m.gCtx.Config().Discord.GuildID, member.User.ID, m.gCtx.Config().Modules.InHouse.GoldRoleID); err != nil {
+			if err := s.GuildMemberRoleAdd(m.gCtx.Config().Discord.GuildID, msg.Author.ID, m.gCtx.Config().Modules.InHouse.GoldRoleID); err != nil {
 				logrus.Errorf("cannot add role (%s) from user (%s): %s", m.gCtx.Config().Modules.InHouse.InhouseRoleID, msg.Author.ID, err.Error())
 				return err
 			}
@@ -384,7 +384,7 @@ func (m *Module) TakeGoldCmd() command.Cmd {
 				return err
 			}
 
-			if err := s.GuildMemberRoleRemove(m.gCtx.Config().Discord.GuildID, member.User.ID, m.gCtx.Config().Modules.InHouse.GoldRoleID); err != nil {
+			if err := s.GuildMemberRoleRemove(m.gCtx.Config().Discord.GuildID, msg.Author.ID, m.gCtx.Config().Modules.InHouse.GoldRoleID); err != nil {
 				logrus.Errorf("cannot add role (%s) from user (%s): %s", m.gCtx.Config().Modules.InHouse.InhouseRoleID, msg.Author.ID, err.Error())
 				return err
 			}
@@ -426,7 +426,7 @@ func (m *Module) PingCmd() command.Cmd {
 				}
 			}
 
-			_, err = s.ChannelMessageSend(msg.ChannelID, fmt.Sprintf("<&!%s> pingged by %s", m.gCtx.Config().Modules.InHouse.InhouseRoleID, msg.Author))
+			_, err = s.ChannelMessageSend(msg.ChannelID, fmt.Sprintf("<@&%s> pingged by %s", m.gCtx.Config().Modules.InHouse.InhouseRoleID, msg.Author))
 			return err
 		},
 	}
