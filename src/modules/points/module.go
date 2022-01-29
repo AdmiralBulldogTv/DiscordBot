@@ -51,7 +51,7 @@ func (m *Module) Register(gCtx global.Context) (<-chan struct{}, error) {
 		close(m.done)
 	}()
 
-	return m.done, err
+	return m.done, err.ErrorOrNil()
 }
 
 func (m *Module) Name() string {

@@ -145,6 +145,12 @@ type Config struct {
 		GoodNight struct {
 			Enabled bool `mapstructure:"enabled" json:"enabled"`
 		} `mapstructure:"goodnight" json:"goodnight"`
+		InHouse struct {
+			Enabled         bool     `mapstructure:"enabled" json:"enabled"`
+			InhouseRoleID   string   `mapstructure:"inhouse_role_id" json:"inhouse_role_id"`
+			GoldRoleID      string   `mapstructure:"gold_role_id" json:"gold_role_id"`
+			RequiredRoleIDs []string `mapstructure:"required_role_ids" json:"required_role_ids"`
+		} `mapstructure:"inhouse" json:"inhouse"`
 	} `mapstructure:"modules" json:"modules"`
 }
 
