@@ -91,6 +91,11 @@ type Config struct {
 		GuildID    string   `mapstructure:"guild_id" json:"guild_id"`
 		Token      string   `mapstructure:"token" json:"token"`
 		AdminRoles []string `mapstructure:"admin_roles" json:"admin_roles"`
+		Logging    struct {
+			Enabled   bool   `mapstructure:"enabled" json:"enabled"`
+			ChannelID string `mapstructure:"channel_id" json:"channel_id"`
+			Debug     bool   `mapstructure:"debug" json:"debug"`
+		} `mapstructure:"logging" json:"logging"`
 	} `mapstructure:"discord" json:"discord"`
 
 	Pod struct {
@@ -151,6 +156,39 @@ type Config struct {
 			GoldRoleID      string   `mapstructure:"gold_role_id" json:"gold_role_id"`
 			RequiredRoleIDs []string `mapstructure:"required_role_ids" json:"required_role_ids"`
 		} `mapstructure:"inhouse" json:"inhouse"`
+		Tracker struct {
+			Enabled      bool     `mapstructure:"enabled" json:"enabled"`
+			SubRoles     []string `mapstructure:"sub_roles" json:"sub_roles"`
+			SpecialRoles []string `mapstructure:"special_roles" json:"special_roles"`
+			Discord      struct {
+				ClientID     string `mapstructure:"client_id" json:"client_id"`
+				ClientSecret string `mapstructure:"client_secret" json:"client_secret"`
+				RedirectURL  string `mapstructure:"redirect_url" json:"redirect_url"`
+			} `mapstructure:"discord" json:"discord"`
+			HTTP struct {
+				CookieDomain string `mapstructure:"cookie_domain" json:"cookie_domain"`
+				CookieSecure bool   `mapstructure:"cookie_secure" json:"cookie_secure"`
+				Bind         string `mapstructure:"bind" json:"bind"`
+			} `mapstructure:"http" json:"http"`
+			Steam struct {
+				ApiKey string `mapstructure:"api_key" json:"api_key"`
+				Main   struct {
+					Username   string `mapstructure:"username" json:"username"`
+					Password   string `mapstructure:"password" json:"password"`
+					TotpSecret string `mapstructure:"totp_secret" json:"totp_secret"`
+				} `mapstructure:"main" json:"main"`
+				Games struct {
+					Username   string `mapstructure:"username" json:"username"`
+					Password   string `mapstructure:"password" json:"password"`
+					TotpSecret string `mapstructure:"totp_secret" json:"totp_secret"`
+				} `mapstructure:"games" json:"games"`
+				Dota struct {
+					Username   string `mapstructure:"username" json:"username"`
+					Password   string `mapstructure:"password" json:"password"`
+					TotpSecret string `mapstructure:"totp_secret" json:"totp_secret"`
+				} `mapstructure:"dota" json:"dota"`
+			} `mapstructure:"steam" json:"steam"`
+		} `mapstructure:"tracker" json:"tracker"`
 	} `mapstructure:"modules" json:"modules"`
 }
 

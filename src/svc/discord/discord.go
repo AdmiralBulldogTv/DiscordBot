@@ -1,15 +1,21 @@
 package discord
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
+	"io"
+	"net/textproto"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/AdmiralBulldogTv/DiscordBot/src/global"
 	"github.com/AdmiralBulldogTv/DiscordBot/src/instance"
 	"github.com/AdmiralBulldogTv/DiscordBot/src/svc/discord/command"
 	"github.com/bwmarrin/discordgo"
 	"github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus/hooks/writer"
 )
 
 type discordInstsnce struct {
@@ -49,6 +55,8 @@ func New(gCtx global.Context) instance.Discord {
 		close(d.done)
 	}()
 
+	d.initLogger()
+
 	return d
 }
 
@@ -84,6 +92,24 @@ func (d *discordInstsnce) DeregisterCommand(prefix string, cmd command.Cmd) erro
 	return nil
 }
 
+func (d *discordInstsnce) SendMessage(channelID string, msg *discordgo.MessageSend) (*discordgo.Message, error) {
+	return d.discord.ChannelMessageSendComplex(channelID, msg)
+}
+
+func (d *discordInstsnce) SendPrivateMessage(userID string, msg *discordgo.MessageSend) (*discordgo.Message, error) {
+	st, err := d.discord.UserChannelCreate(userID)
+	if err != nil {
+		logrus.Error("failed to create dm channel: ", err)
+		return nil, err
+	}
+
+	return d.SendMessage(st.ID, msg)
+}
+
+func (d *discordInstsnce) Member(guildID string, userID string) (*discordgo.Member, error) {
+	return d.discord.GuildMember(guildID, userID)
+}
+
 func (d *discordInstsnce) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == s.State.User.ID || m.Author.Bot || m.GuildID != d.gCtx.Config().Discord.GuildID {
 		return
@@ -109,5 +135,78 @@ func (d *discordInstsnce) messageCreate(s *discordgo.Session, m *discordgo.Messa
 				logrus.Info("internal server error: ", err)
 			}
 		}
+	}
+}
+
+func (d *discordInstsnce) initLogger() {
+	if !d.gCtx.Config().Discord.Logging.Enabled {
+		return
+	}
+
+	rErr, wErr := io.Pipe()
+	go d.handleLogStream(rErr)
+	logrus.AddHook(&writer.Hook{
+		Writer: wErr,
+		LogLevels: []logrus.Level{
+			logrus.PanicLevel,
+			logrus.FatalLevel,
+			logrus.ErrorLevel,
+			logrus.WarnLevel,
+		},
+	})
+	if d.gCtx.Config().Discord.Logging.Debug {
+		rStd, wStd := io.Pipe()
+		go d.handleLogStream(rStd)
+		logrus.AddHook(&writer.Hook{
+			Writer: wStd,
+			LogLevels: []logrus.Level{
+				logrus.InfoLevel,
+				logrus.DebugLevel,
+				logrus.TraceLevel,
+			},
+		})
+	}
+
+	logrus.Info("discord logging init")
+}
+
+func (d *discordInstsnce) handleLogStream(logs io.Reader) {
+	lines := textproto.NewReader(bufio.NewReader(logs))
+	buf := bytes.Buffer{}
+	mtx := sync.Mutex{}
+	go func() {
+		tick := time.NewTicker(time.Second)
+		for range tick.C {
+			mtx.Lock()
+			line := strings.TrimSpace(buf.String())
+			if len(line) != 0 {
+				if _, err := d.discord.ChannelMessageSend(d.gCtx.Config().Discord.Logging.ChannelID, buf.String()); err != nil {
+					logrus.Error("failed to send chat message: ", err)
+				}
+			}
+			buf.Reset()
+			mtx.Unlock()
+		}
+
+	}()
+	for {
+		line, err := lines.ReadLine()
+		if err != nil {
+			logrus.Fatal("failed to read line: ", err)
+		}
+
+		mtx.Lock()
+		if buf.Len()+len(line)+1 > 1800 {
+			// we need to flush the buffer now.
+			line := strings.TrimSpace(buf.String())
+			if len(line) != 0 {
+				if _, err := d.discord.ChannelMessageSend(d.gCtx.Config().Discord.Logging.ChannelID, line); err != nil {
+					logrus.Error("failed to send chat message: ", err)
+				}
+			}
+			buf.Reset()
+		}
+		_, _ = buf.WriteString(line + "\n")
+		mtx.Unlock()
 	}
 }

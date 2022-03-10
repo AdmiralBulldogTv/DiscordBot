@@ -6,6 +6,7 @@ import (
 	"github.com/AdmiralBulldogTv/DiscordBot/src/modules/goodnight"
 	"github.com/AdmiralBulldogTv/DiscordBot/src/modules/inhouse"
 	"github.com/AdmiralBulldogTv/DiscordBot/src/modules/points"
+	"github.com/AdmiralBulldogTv/DiscordBot/src/modules/tracker"
 	"github.com/sirupsen/logrus"
 )
 
@@ -29,6 +30,9 @@ func New(gCtx global.Context) <-chan struct{} {
 	}
 	if gCtx.Config().Modules.InHouse.Enabled {
 		modules = append(modules, inhouse.New())
+	}
+	if gCtx.Config().Modules.Tracker.Enabled {
+		modules = append(modules, tracker.New())
 	}
 	dones := []<-chan struct{}{}
 

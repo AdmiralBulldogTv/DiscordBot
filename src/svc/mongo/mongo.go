@@ -56,11 +56,6 @@ var (
 	ErrNoDocuments = mongo.ErrNoDocuments
 )
 
-const (
-	CollectionUsers   instance.MongoCollectionName = "users"
-	CollectionStreams instance.MongoCollectionName = "streams"
-)
-
 type (
 	Pipeline       = mongo.Pipeline
 	WriteModel     = mongo.WriteModel

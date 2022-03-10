@@ -1,4 +1,4 @@
-FROM golang:1.17.6 as builder
+FROM golang:1.17.7 as builder
 
 WORKDIR /tmp/discord-bot
 
@@ -14,9 +14,11 @@ RUN apt-get update && apt-get install make git gcc -y && \
     make build_deps && \
     make
 
-FROM alfg/ffmpeg:latest
+FROM ubuntu:latest
 
 WORKDIR /app
+
+RUN apt-get update && apt-get install ca-certificates -y && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /tmp/discord-bot/bin/discord-bot .
 

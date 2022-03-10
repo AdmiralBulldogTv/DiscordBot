@@ -219,8 +219,8 @@ func (m *Module) GoldCmd() command.Cmd {
 				return err
 			}
 
-			if err := s.GuildMemberRoleAdd(m.gCtx.Config().Discord.GuildID, msg.Author.ID, m.gCtx.Config().Modules.InHouse.GoldRoleID); err != nil {
-				logrus.Errorf("cannot add role (%s) from user (%s): %s", m.gCtx.Config().Modules.InHouse.InhouseRoleID, msg.Author.ID, err.Error())
+			if err := s.GuildMemberRoleAdd(m.gCtx.Config().Discord.GuildID, member.User.ID, m.gCtx.Config().Modules.InHouse.GoldRoleID); err != nil {
+				logrus.Errorf("cannot add role (%s) from user (%s): %s", m.gCtx.Config().Modules.InHouse.InhouseRoleID, member.User.ID, err.Error())
 				return err
 			}
 
@@ -275,7 +275,7 @@ func (m *Module) AddCmd() command.Cmd {
 			}
 
 			if err := s.GuildMemberRoleAdd(m.gCtx.Config().Discord.GuildID, member.User.ID, m.gCtx.Config().Modules.InHouse.InhouseRoleID); err != nil {
-				logrus.Errorf("cannot add role (%s) from user (%s): %s", m.gCtx.Config().Modules.InHouse.InhouseRoleID, msg.Author.ID, err.Error())
+				logrus.Errorf("cannot add role (%s) from user (%s): %s", m.gCtx.Config().Modules.InHouse.InhouseRoleID, member.User.ID, err.Error())
 				return err
 			}
 
@@ -330,7 +330,7 @@ func (m *Module) RemoveCmd() command.Cmd {
 			}
 
 			if err := s.GuildMemberRoleRemove(m.gCtx.Config().Discord.GuildID, member.User.ID, m.gCtx.Config().Modules.InHouse.InhouseRoleID); err != nil {
-				logrus.Errorf("cannot add role (%s) from user (%s): %s", m.gCtx.Config().Modules.InHouse.InhouseRoleID, msg.Author.ID, err.Error())
+				logrus.Errorf("cannot add role (%s) from user (%s): %s", m.gCtx.Config().Modules.InHouse.InhouseRoleID, member.User.ID, err.Error())
 				return err
 			}
 
@@ -384,8 +384,8 @@ func (m *Module) TakeGoldCmd() command.Cmd {
 				return err
 			}
 
-			if err := s.GuildMemberRoleRemove(m.gCtx.Config().Discord.GuildID, msg.Author.ID, m.gCtx.Config().Modules.InHouse.GoldRoleID); err != nil {
-				logrus.Errorf("cannot add role (%s) from user (%s): %s", m.gCtx.Config().Modules.InHouse.InhouseRoleID, msg.Author.ID, err.Error())
+			if err := s.GuildMemberRoleRemove(m.gCtx.Config().Discord.GuildID, member.User.ID, m.gCtx.Config().Modules.InHouse.GoldRoleID); err != nil {
+				logrus.Errorf("cannot add role (%s) from user (%s): %s", m.gCtx.Config().Modules.InHouse.InhouseRoleID, member.User.ID, err.Error())
 				return err
 			}
 

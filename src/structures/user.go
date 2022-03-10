@@ -6,26 +6,26 @@ type User struct {
 	ID primitive.ObjectID `bson:"_id,omitempty"`
 
 	Discord UserDiscord `bson:"discord,omitempty"`
-	Stream  UserSteam   `bson:"stream"`
-	Twitch  UserTwitch  `bson:"twitch"`
+	Steam   UserSteam   `bson:"steam,omitempty"`
+	Twitch  UserTwitch  `bson:"twitch,omitempty"`
 
 	Modules UserModules `bson:"modules"`
 }
 
 type UserDiscord struct {
-	ID            string `bson:"id"`
-	Name          string `bson:"name"`
-	Discriminator string `bson:"discriminator"`
+	ID            string `bson:"id,omitempty"`
+	Name          string `bson:"name,omitempty"`
+	Discriminator string `bson:"discriminator,omitempty"`
 }
 
 type UserSteam struct {
-	ID   string `bson:"id"`
-	Name string `bson:"name"`
+	ID   string `bson:"id,omitempty"`
+	Name string `bson:"name,omitempty"`
 }
 
 type UserTwitch struct {
-	ID   string `bson:"id"`
-	Name string `bson:"name"`
+	ID   string `bson:"id,omitempty"`
+	Name string `bson:"name,omitempty"`
 }
 
 type UserModules struct {
