@@ -195,9 +195,10 @@ func (m *Module) Register(gCtx global.Context) (<-chan struct{}, error) {
 		m.wg.Wait()
 		m.autoAdjustNicknames()
 	}()
-	gCtx.Inst().Discord.RegisterCommand("dotagames-manage", m.CommandGroup())
 
-	return done, nil
+	err := gCtx.Inst().Discord.RegisterCommand("dotagames-manage", m.CommandGroup())
+
+	return done, err
 }
 
 func (m *Module) CommandGroup() command.Cmd {
