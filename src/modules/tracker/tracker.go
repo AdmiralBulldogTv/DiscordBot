@@ -954,7 +954,12 @@ func (m *Module) gameRelationships(rel steamlang.EFriendRelationship, sid steami
 		return
 	}
 
-	if err := m.adjustNickname(context.Background(), user, sectionGames); err != nil {
+	flags := sectionGames
+	if rel == steamlang.EFriendRelationship_Friend {
+		flags |= friendAdded
+	}
+
+	if err := m.adjustNickname(context.Background(), user, flags); err != nil {
 		logrus.Errorf("failed to adjust nickname for user: %s %s", user.Discord.ID, err.Error())
 	}
 }
@@ -1003,7 +1008,12 @@ func (m *Module) mainRelationships(rel steamlang.EFriendRelationship, sid steami
 		return
 	}
 
-	if err := m.adjustNickname(context.Background(), user, sectionMain); err != nil {
+	flags := sectionMain
+	if rel == steamlang.EFriendRelationship_Friend {
+		flags |= friendAdded
+	}
+
+	if err := m.adjustNickname(context.Background(), user, flags); err != nil {
 		logrus.Errorf("failed to adjust nickname for user: %s %s", user.Discord.ID, err.Error())
 	}
 }
@@ -1012,6 +1022,7 @@ const (
 	sectionMain   = 1 << iota
 	sectionGames  = 1 << iota
 	forceNickname = 1 << iota
+	friendAdded   = 1 << iota
 )
 
 func (m *Module) adjustNickname(ctx context.Context, user structures.User, flags int) error {
@@ -1042,11 +1053,18 @@ func (m *Module) adjustNickname(ctx context.Context, user structures.User, flags
 			}
 		}
 	}
+	if user.Twitch.ID == "" || user.Steam.ID == "" {
+		isSpecial = false
+		isSub = false
+	}
 
 	id, _ := strconv.ParseUint(user.Steam.ID, 10, 64)
 	sid := utils.SteamID64ToSteamID(id)
 	if v, ok := m.Games.Friends()[sid]; ok && flags&sectionGames != 0 {
 		nick := m.Games.NicknameByID(sid)
+		if flags&friendAdded != 0 {
+			v.Relationship = steamlang.EFriendRelationship_Friend
+		}
 		switch v.Relationship {
 		case steamlang.EFriendRelationship_Friend:
 			extra := ""
@@ -1103,6 +1121,9 @@ func (m *Module) adjustNickname(ctx context.Context, user structures.User, flags
 
 	if v, ok := m.Main.Friends()[sid]; ok && flags&sectionMain != 0 {
 		nick := m.Main.NicknameByID(sid)
+		if flags&friendAdded != 0 {
+			v.Relationship = steamlang.EFriendRelationship_Friend
+		}
 		switch v.Relationship {
 		case steamlang.EFriendRelationship_Friend:
 			extra := ""
