@@ -93,7 +93,7 @@ func (m *Module) onMessage(s *discordgo.Session, msg *discordgo.MessageCreate) {
 			splits := strings.SplitN(v, " ", 3)
 			st, err := s.ChannelMessage(splits[0], splits[1])
 			if err == nil {
-				at, _ := st.Timestamp.Parse()
+				at := st.Timestamp
 				content = append(content, fmt.Sprintf("%s mentioned you %s ago: [here](https://discord.com/channels/%s/%s/%s)", st.Author, (time.Since(at)/time.Second)*time.Second, splits[2], st.ChannelID, st.ID))
 				if len(content) == 20 {
 					break
@@ -193,7 +193,7 @@ func (m *Module) GnCmd() command.Cmd {
 					splits := strings.SplitN(v, " ", 3)
 					st, err := s.ChannelMessage(splits[0], splits[1])
 					if err == nil {
-						at, _ := st.Timestamp.Parse()
+						at := st.Timestamp
 						content = append(content, fmt.Sprintf("%s mentioned you %s ago: [here](https://discord.com/channels/%s/%s/%s)", st.Author.Mention(), (time.Since(at)/time.Second)*time.Second, splits[2], st.ChannelID, st.ID))
 						if len(content) == 20 {
 							break
@@ -273,7 +273,7 @@ func (m *Module) TuckCmd() command.Cmd {
 					splits := strings.SplitN(v, " ", 3)
 					st, err := s.ChannelMessage(splits[0], splits[1])
 					if err == nil {
-						at, _ := st.Timestamp.Parse()
+						at := st.Timestamp
 						content = append(content, fmt.Sprintf("%s mentioned you %s ago: [here](https://discord.com/channels/%s/%s/%s)", st.Author.Mention(), (time.Since(at)/time.Second)*time.Second, splits[2], st.ChannelID, st.ID))
 						if len(content) == 20 {
 							break
