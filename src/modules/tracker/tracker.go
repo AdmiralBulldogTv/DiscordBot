@@ -1068,49 +1068,42 @@ func (m *Module) adjustNickname(ctx context.Context, user structures.User, flags
 		switch v.Relationship {
 		case steamlang.EFriendRelationship_Friend:
 			extra := ""
-			goOn := true
 			if subsGamesRegex.MatchString(nick) { // added because they are a sub
 				extra = subsGamesRegex.FindAllStringSubmatch(nick, 1)[0][3]
 			} else if specialGamesRegex.MatchString(nick) { // added because they are special
 				extra = specialGamesRegex.FindAllStringSubmatch(nick, 1)[0][2]
-			} else if flags&forceNickname == 0 { // added manually or has bad nickname
-				// we cant unfriend them because we dont know who they are.
-				logrus.Warnf("Unable to correct games nickname of user (%s) because their nickname is non-standard: %s", user.Discord.ID, m.Games.NicknameByID(sid))
-				goOn = false
 			}
 
-			if goOn {
-				newNick := ""
-				// we must check their roles to make sure they are still subbed
-				if isSpecial {
-					// they are special now, we have to change their nickname to reflect this
-					newNick = fmt.Sprintf("%s-%s", user.Twitch.Name, extra)
-				} else if isSub {
-					// we need to correct thier nickname
-					// we can safely overwrite their nickname
-					now := time.Now()
-					currentYear, currentMonth, _ := now.Date()
-					currentLocation := now.Location()
-					firstOfMonth := time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, currentLocation)
-					count, err := m.Ctx.Inst().Mongo.Collection(mongo.CollectionNameDotaGamePlayers).CountDocuments(context.Background(), bson.M{
-						"user_id": user.ID,
-						"created_at": bson.M{
-							"$gte": firstOfMonth,
-						},
-					})
-					if err != nil {
-						logrus.Error("failed to get game count: ", err)
-						return err
-					}
+			newNick := ""
+			// we must check their roles to make sure they are still subbed
+			if isSpecial {
+				// they are special now, we have to change their nickname to reflect this
+				newNick = fmt.Sprintf("%s-%s", user.Twitch.Name, extra)
+			} else if isSub {
+				// we need to correct thier nickname
+				// we can safely overwrite their nickname
+				now := time.Now()
+				currentYear, currentMonth, _ := now.Date()
+				currentLocation := now.Location()
+				firstOfMonth := time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, currentLocation)
+				count, err := m.Ctx.Inst().Mongo.Collection(mongo.CollectionNameDotaGamePlayers).CountDocuments(context.Background(), bson.M{
+					"user_id": user.ID,
+					"created_at": bson.M{
+						"$gte": firstOfMonth,
+					},
+				})
+				if err != nil {
+					logrus.Error("failed to get game count: ", err)
+					return err
+				}
 
-					newNick = fmt.Sprintf("%dMC%s-%s", count, user.Twitch.Name, extra)
-				} else {
-					// they are no longer subbed we must remove them
-					m.Games.RemoveFriend(sid)
-				}
-				if newNick != nick && (isSpecial || isSub) {
-					m.Games.RenameFriend(sid, newNick)
-				}
+				newNick = fmt.Sprintf("%dMC%s-%s", count, user.Twitch.Name, extra)
+			} else {
+				// they are no longer subbed we must remove them
+				m.Games.RemoveFriend(sid)
+			}
+			if newNick != nick && (isSpecial || isSub) {
+				m.Games.RenameFriend(sid, newNick)
 			}
 		case steamlang.EFriendRelationship_RequestRecipient:
 			if isSpecial || isSub {
@@ -1127,34 +1120,27 @@ func (m *Module) adjustNickname(ctx context.Context, user structures.User, flags
 		switch v.Relationship {
 		case steamlang.EFriendRelationship_Friend:
 			extra := ""
-			goOn := true
 			if subsMainRegex.MatchString(nick) { // added because they are a sub
 				extra = subsMainRegex.FindAllStringSubmatch(nick, 1)[0][2]
 			} else if specialMainRegex.MatchString(nick) { // added because they are special
 				extra = specialMainRegex.FindAllStringSubmatch(nick, 1)[0][2]
-			} else if flags&forceNickname == 0 { // added manually or has bad nickname
-				// we cant unfriend them because we dont know who they are.
-				logrus.Warnf("Unable to correct main nickname of user (%s) because their nickname is non-standard: %s", user.Discord.ID, m.Games.NicknameByID(sid))
-				goOn = false
 			}
 
-			if goOn {
-				newNick := ""
-				// we must check their roles to make sure they are still subbed
-				if isSpecial {
-					// they are special now, we have to change their nickname to reflect this
-					newNick = fmt.Sprintf("%s-%s", user.Twitch.Name, extra)
-				} else if isSub {
-					// we need to correct thier nickname
-					// we can safely overwrite their nickname
-					newNick = fmt.Sprintf("MC%s-%s", user.Twitch.Name, extra)
-				} else {
-					// they are no longer subbed we must remove them
-					m.Main.RemoveFriend(sid)
-				}
-				if newNick != nick && (isSpecial || isSub) {
-					m.Main.RenameFriend(sid, newNick)
-				}
+			newNick := ""
+			// we must check their roles to make sure they are still subbed
+			if isSpecial {
+				// they are special now, we have to change their nickname to reflect this
+				newNick = fmt.Sprintf("%s-%s", user.Twitch.Name, extra)
+			} else if isSub {
+				// we need to correct thier nickname
+				// we can safely overwrite their nickname
+				newNick = fmt.Sprintf("MC%s-%s", user.Twitch.Name, extra)
+			} else {
+				// they are no longer subbed we must remove them
+				m.Main.RemoveFriend(sid)
+			}
+			if newNick != nick && (isSpecial || isSub) {
+				m.Main.RenameFriend(sid, newNick)
 			}
 		case steamlang.EFriendRelationship_RequestRecipient:
 			if isSpecial || isSub {
